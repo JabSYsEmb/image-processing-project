@@ -1,4 +1,4 @@
-#!./noise_project/bin/python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -6,6 +6,7 @@ import numpy as np
 import cv2 as cv
 
 from filters import *
+from hough_transform import fast_hough_line, show_hough_line, rgb2gray
 
 from PyQt5 import QtGui, uic
 from PyQt5.QtGui import QImage, QPixmap
@@ -14,7 +15,8 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QListWidget, QLis
     QVBoxLayout, QButtonGroup, QSlider, QFileDialog, QPushButton, QTabWidget
 
 def cv2qim(image):
-    height, width, channel = image.shape
+    if (len(image.shape) == 3): height, width, channel = image.shape
+    else: height, width = image.shape
     bytesPerLine = 3 * width
     q_image = QImage(image.data, width, height, bytesPerLine, QImage.Format_BGR888)
     return q_image
@@ -60,10 +62,7 @@ class NoiseRestorationAPP(QMainWindow):
         self.browse_button = self.findChild(QPushButton, 'browse_button')
         self.tabWidget = self.findChild(QTabWidget, 'tabWidget')
         self.compressed_label = self.findChild(QLabel, "compressed_label")
-        self.quant_label = self.findChild(QLabel, "quant_label")
-        self.block_label = self.findChild(QLabel, "block_label")
-        self.quant_slider = self.findChild(QSlider, 'quant_slider')
-        self.block_slider = self.findChild(QSlider, 'block_slider')
+        self.transform_btn = self.findChild(QPushButton, 'transform')
         self.noisyTitle_label = self.findChild(QLabel, 'noisyTitle_label')
         self.restoredTitle_label = self.findChild(QLabel, 'restoredTitle_label')
 
@@ -79,9 +78,10 @@ class NoiseRestorationAPP(QMainWindow):
         self.filterProp2_slider.valueChanged.connect(self.restored_slider_moved)
         self.filterProp3_slider.valueChanged.connect(self.restored_slider_moved)
         self.browse_button.clicked.connect(self.load)
+        self.transform_btn.clicked.connect(self.hough_transform)
         self.tabWidget.currentChanged.connect(self.change_tab_index_event)
-        self.quant_slider.valueChanged.connect(self.compress)
-        self.block_slider.valueChanged.connect(self.compress)
+        # self.quant_slider.valueChanged.connect(self.compress)
+        # self.block_slider.valueChanged.connect(self.compress)
 
         # initial functions
         self.populate_list("./images/")
@@ -105,21 +105,43 @@ class NoiseRestorationAPP(QMainWindow):
             self.compressed_label.show()
             self.noisyTitle_label.hide()
             self.restoredTitle_label.hide()
-            self.compress()
+            self.hough_transform()
+            # self.compress()
 
-    def compress(self):
+    def hough_transform(self):
+        import cv2
         item = self.images_list.currentItem()
-        image = item.data(Qt.UserRole)
-        quantization = int(self.quant_label.text())
-        block = int(self.block_label.text())
+        item = item.data(Qt.UserRole)
+        item = rgb2gray(item)
+        print(item.shape)
+        accumulator, thetas, rhos = fast_hough_line(item)
+        show_hough_line(accumulator)
+        print("accumulator shape is ", accumulator.shape)
+        hough_img = cv2.imread("./test_2.png")
+        hough_img = cv2.resize(hough_img, item.shape, fx=0.5,fy=0.5)
+        q_image = cv2qim(hough_img)
+        q_image = QPixmap(q_image)
+        q_image.scaledToWidth(item.shape[1])
+        print("QImage size " , q_image.size())
+        # if q_image.height() != self.img_height:
+            # q_image = q_image.scaledToHeight(self.img_height)
+        # if q_image.width()  != self.img_width:
+            # q_image = q_image.scaledToWidth(self.img_width)
+        self.compressed_label.setPixmap(q_image)
 
-        compressed = jpeg_comp(image, quantization, block)
-
-        q_image = cv2qim(compressed)
-        if q_image.height() > self.img_height:
-            q_image = q_image.scaledToHeight(self.img_height)
-
-        self.compressed_label.setPixmap(QPixmap(q_image))
+#     def compress(self):
+#         item = self.images_list.currentItem()
+#         image = item.data(Qt.UserRole)
+#         # quantization = int(self.quant_label.text())
+#         # block = int(self.block_label.text())
+# 
+#         compressed = jpeg_comp(image, quantization, block)
+# 
+#         q_image = cv2qim(compressed)
+#         if q_image.height() > self.img_height:
+#             q_image = q_image.scaledToHeight(self.img_height)
+# 
+#         self.compressed_label.setPixmap(QPixmap(q_image))
 
     def update_original(self):
         item = self.images_list.currentItem()
@@ -131,8 +153,8 @@ class NoiseRestorationAPP(QMainWindow):
 
         self.original_label.setPixmap(QPixmap(q_image))
         self.noise_slider_moved()
-        if self.tabWidget.currentIndex() == 1:
-            self.compress()
+        # if self.tabWidget.currentIndex() == 1:
+            # self.compress()
 
     def noise_slider_moved(self):
         filter = self.noise_radio_group.checkedId()
