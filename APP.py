@@ -30,7 +30,7 @@ class NoiseRestorationAPP(QMainWindow):
 
         # main variables
         self.img_width = int(app.primaryScreen().size().width()/2 - 200)
-        self.img_height = int(app.primaryScreen().size().height()/2 - 40)
+        self.img_height = int(app.primaryScreen().size().height()/2 - 80)
         self.original = None
         self.noisy = None
 
@@ -87,14 +87,7 @@ class NoiseRestorationAPP(QMainWindow):
         self.populate_list("./images/")
 
     def change_tab_index_event(self, index):
-        if index == 1:
-            self.noisy_label.hide()
-            self.restored_label.hide()
-            self.compressed_label.show()
-            self.noisyTitle_label.hide()
-            self.restoredTitle_label.hide()
-            self.compress()
-        elif index == 0:
+        if index == 0:
             self.noisy_label.show()
             self.restored_label.show()
             self.compressed_label.hide()
@@ -105,6 +98,14 @@ class NoiseRestorationAPP(QMainWindow):
             self.restoredTitle_label.show()
             self.showNormal()
             self.showMaximized()
+
+        elif index == 1:
+            self.noisy_label.hide()
+            self.restored_label.hide()
+            self.compressed_label.show()
+            self.noisyTitle_label.hide()
+            self.restoredTitle_label.hide()
+            self.compress()
 
     def compress(self):
         item = self.images_list.currentItem()
@@ -140,21 +141,17 @@ class NoiseRestorationAPP(QMainWindow):
         self.noise_signal.emit(filter, prop1, prop2)
 
     def update_noise_gui(self, button):
-
         # gaussian
         if button == -2:
             self.noiseProp2_label.show()
             self.prop2Value_label.show()
             self.noiseProp2_slider.show()
-
             self.noiseProp1_label.setText("Mean =")
             self.noiseProp1_slider.setRange(0, 10)
             self.noiseProp1_slider.setTickInterval(1)
-
             self.noiseProp2_label.setText("Variance =")
             self.noiseProp2_slider.setRange(0, 100)
             self.noiseProp2_slider.setTickInterval(1)
-
             prop1 = self.noiseProp1_slider.sliderPosition()
             prop2 = self.noiseProp2_slider.sliderPosition()
             self.noise_signal.emit(-2, prop1, prop2)
@@ -164,15 +161,12 @@ class NoiseRestorationAPP(QMainWindow):
             self.noiseProp2_label.show()
             self.prop2Value_label.show()
             self.noiseProp2_slider.show()
-
             self.noiseProp1_label.setText("Mean =")
             self.noiseProp1_slider.setRange(0, 100)
             self.noiseProp1_slider.setTickInterval(1)
-
             self.noiseProp2_label.setText("Variance =")
             self.noiseProp2_slider.setRange(0, 100)
             self.noiseProp2_slider.setTickInterval(1)
-
             prop1 = self.noiseProp1_slider.sliderPosition()
             prop2 = self.noiseProp2_slider.sliderPosition()
             self.noise_signal.emit(-3, prop1, prop2)
@@ -182,11 +176,9 @@ class NoiseRestorationAPP(QMainWindow):
             self.noiseProp2_label.hide()
             self.noiseProp2_slider.hide()
             self.prop2Value_label.hide()
-
             self.noiseProp1_label.setText("Probability =")
             self.noiseProp1_slider.setRange(0, 10)
             self.noiseProp1_slider.setTickInterval(1)
-
             prop1 = self.noiseProp1_slider.sliderPosition()
             prop2 = self.noiseProp2_slider.sliderPosition()
             self.noise_signal.emit(-4, prop1, prop2)
@@ -196,11 +188,9 @@ class NoiseRestorationAPP(QMainWindow):
             self.noiseProp2_label.hide()
             self.prop2Value_label.hide()
             self.noiseProp2_slider.hide()
-
             self.noiseProp1_label.setText("Mean =")
             self.noiseProp1_slider.setRange(0, 100)
             self.noiseProp1_slider.setTickInterval(1)
-
             prop1 = self.noiseProp1_slider.sliderPosition()
             prop2 = self.noiseProp2_slider.sliderPosition()
             self.noise_signal.emit(-5, prop1, prop2)
@@ -210,11 +200,9 @@ class NoiseRestorationAPP(QMainWindow):
             self.noiseProp2_label.hide()
             self.noiseProp2_slider.hide()
             self.prop2Value_label.hide()
-
             self.noiseProp1_label.setText("Mean =")
             self.noiseProp1_slider.setRange(0, 100)
             self.noiseProp1_slider.setTickInterval(1)
-
             prop1 = self.noiseProp1_slider.sliderPosition()
             prop2 = self.noiseProp2_slider.sliderPosition()
             self.noise_signal.emit(-6, prop1, prop2)
@@ -225,15 +213,12 @@ class NoiseRestorationAPP(QMainWindow):
             self.noiseProp2_slider.show()
             self.prop1Value_label.show()
             self.prop2Value_label.show()
-
             self.noiseProp1_label.setText("a =")
             self.noiseProp1_slider.setRange(0, 255)
             self.noiseProp1_slider.setTickInterval(1)
-
             self.noiseProp2_label.setText("b =")
             self.noiseProp2_slider.setRange(0, 255)
             self.noiseProp2_slider.setTickInterval(1)
-
             prop1 = self.noiseProp1_slider.sliderPosition()
             prop2 = self.noiseProp2_slider.sliderPosition()
             self.noise_signal.emit(-2, prop1, prop2)
@@ -243,7 +228,6 @@ class NoiseRestorationAPP(QMainWindow):
 
         if noise_filter == -2:
             noisy = cv.add(original,noise_gaussian(original.shape, prop1, prop2))
-            
 
         elif noise_filter == -3:
             prop1 /= 10
